@@ -1,0 +1,147 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class GameManager : MonoBehaviour
+{
+
+    public GameObject player;
+
+    Vector3 StartingPos;
+    Quaternion StartingRotate;
+    bool isStarted = false;
+    static bool isEnded = false;
+
+    static int stageLevel = 0;
+
+
+
+    void Awake()
+    {
+        //게임 정지
+        Time.timeScale = 0f;
+
+    }
+
+    // Update is called once per frame
+    void Start()
+    {
+        StartingPos = GameObject.FindGameObjectWithTag("Start").transform.position;
+        StartingRotate = GameObject.FindGameObjectWithTag("Start").transform.rotation;
+    }
+
+    void OnGUI()
+    {
+        GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        GUILayout.BeginVertical();
+        GUILayout.FlexibleSpace();
+
+        if (stageLevel < 3)
+        {
+            GUILayout.Label("Stage" + (stageLevel + 1));
+        }
+        else
+        {
+            GUILayout.Label("Stage End");
+        }
+
+
+        GUILayout.Space(5);
+        GUILayout.EndVertical();
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+        GUILayout.EndArea();
+
+        if (!isStarted && stageLevel == 0)
+        {
+            GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Label("Ready?");
+
+            if (GUILayout.Button("Start!"))
+            {
+                isStarted = true;
+                StartGame();
+            }
+
+            GUILayout.Space(100);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+
+        else if (isEnded && stageLevel == 3)
+        {
+            GUILayout.BeginArea(new Rect(0, 0, Screen.width, Screen.height));
+
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginVertical();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Label("Thank You!");
+
+            if (GUILayout.Button("Restart?"))
+            {
+                isEnded = false;
+                stageLevel = 0;
+                ScoreManager.setScore(0);
+                SceneManager.LoadScene(0, LoadSceneMode.Single);
+            }
+
+            GUILayout.Space(100);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+
+    }
+
+    public void StartGame()
+    {
+        //PlayGame
+        Time.timeScale = 1f;
+
+        //Turn Off Standing Camera
+        GameObject standingCamera = GameObject.FindGameObjectWithTag("MainCamera");
+        standingCamera.SetActive(false);
+
+        //Player Generate
+        StartingPos = new Vector3(StartingPos.x, StartingPos.y + 2f, StartingPos.z);
+        Instantiate(player, StartingPos, StartingRotate);
+        Debug.Log("Player was loaded");
+    }
+
+
+    public static void EndGame()
+    {
+        Time.timeScale = 0f;
+        stageLevel++;
+
+        if (stageLevel == 3)
+            isEnded = true;
+        else
+        {
+            SceneManager.LoadScene(stageLevel, LoadSceneMode.Single);
+        }
+
+    }
+
+    public static void RestartStage()
+    {
+        Time.timeScale = 0f;
+
+        SceneManager.LoadScene(stageLevel, LoadSceneMode.Single);
+    }
+}
